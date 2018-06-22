@@ -12,6 +12,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Team
 {
+
+    /**
+     * @ORM\OneToMany(targetEntity="LeagueManagement", mappedBy="team")
+     */
+    private $leagues;
+    
     /**
      * @var int
      *
@@ -28,12 +34,6 @@ class Team
      */
     private $name;
 
-    /**
-     * @var string
-     *
-     * @ORM\OneToMany(targetEntity="LeagueManagement", mappedBy="teams")
-     */
-    private $league;
 
     /**
      * @var string

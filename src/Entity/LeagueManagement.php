@@ -22,6 +22,13 @@ class LeagueManagement
     private $id;
 
     /**
+     *
+     * @ORM\ManyToOne(targetEntity="League", inversedBy="teams")
+     * @ORM\JoinColumn(name="league_id", referencedColumnName="id", onDelete="SET NULL")
+     */
+    private $league;
+
+    /**
      * @var int
      *
      * @ORM\Column(name="league_id", type="integer", nullable=false, options={"comment"="id of the league"})
@@ -29,10 +36,10 @@ class LeagueManagement
     private $leagueId;
 
     /**
-     *
-     * @ORM\ManyToOne(targetEntity="League", inversedBy="leagues", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Team", inversedBy="leagues")
+     * @ORM\JoinColumn(name="team_id", referencedColumnName="id", onDelete="SET NULL")
      */
-    private $league;
+    private $team;
 
     /**
      * @var int
@@ -41,14 +48,6 @@ class LeagueManagement
      */
     private $teamId;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Team", inversedBy="league", cascade={"persist"})
-     */
-    private $team;
-
-    function __construct() {
-        $this->team = new \Doctrine\Common\Collections\ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -80,22 +79,48 @@ class LeagueManagement
     }
 
     /**
-     * Get team
+     * Set league
      *
-     * @return \Doctrine\Common\Collections\Collection
+     * @param \App\Entity\League $league
+     * @return ProductAspect
      */
-    public function getTeams() {
-        return $this->team;
+    public function setLeague(\App\Entity\League $league = null)
+    {
+        $this->league = $league;
+
+        return $this;
     }
 
     /**
      * Get league
      *
-     * @return \Doctrine\Common\Collections\Collection
+     * @return \App\Entity\League 
      */
-    public function getLeague() {
+    public function getLeague()
+    {
         return $this->league;
     }
 
+    /**
+     * Set team
+     *
+     * @param \App\Entity\Team $team
+     * @return LeagueManagement
+     */
+    public function setTeam(\App\Entity\Team $team = null)
+    {
+        $this->team = $team;
 
+        return $this;
+    }
+
+    /**
+     * Get team
+     *
+     * @return \App\Entity\Team 
+     */
+    public function getTeam()
+    {
+        return $this->team;
+    }
 }

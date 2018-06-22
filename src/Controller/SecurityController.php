@@ -68,9 +68,6 @@ class SecurityController extends Controller
 
 		$em = $this->getEm();
 
-
-		// $form = $this->createForm( new Team(), null, array('method' => 'PUT') );
-  //   	$form->handleRequest($request);
 		$responseArr = array();
 		$team_name = $request->request->get('name');
 		$strip     = $request->request->get('strip');
@@ -95,24 +92,6 @@ class SecurityController extends Controller
 
 		$responseArr = array('code' => 200, 'message' => 'Team created successfully !');
 
-		// validator
-		/*$validator = $this->get('validator');
-		$errors	   = $validator->validate($team);
-
-		if(count($errors) > 0){
-			$error = array();
-			foreach ($errors as $key => $value) {
-				$error[] = $value->getMessage();
-			}
-			$responseArr = array('code' => 500, 'message' => $error);
-		}
-
-		$user = $this->getDoctrine()->getRepository('App\Entity\Team')->findOneBy(['name' => $team_name]);
-		if (!$user) {
-			throw new \Exception('Something went wrong!');
-			// throw $this->createNotFoundException("User Not Found");
-		}
-*/
 		return new JsonResponse($responseArr);
 	}
 
@@ -200,15 +179,15 @@ class SecurityController extends Controller
 			return new JsonResponse(array( 'status' => 400, 'message' => "Invalid strip"));
 		}
 
-		// checking for unique team name
+		// checking for team name not exists
 		$tmp = $em->getRepository('App\Entity\Team')->findOneBy(['name' => $team_name]);
 		if($tmp && $tmp->getId() != $id){
 			return new JsonResponse(array( 'status' => 400, 'message' => "Team Name already exists. Please try any other name."));
 		}
 
+		// updating team
 		$team->setName($team_name);
 		$team->setStrip($strip);
-
 		$em->persist($team);
 		$em->flush();
 
@@ -219,24 +198,59 @@ class SecurityController extends Controller
 
 
 	/**
-	* Route("/test", name="test")
-	* Method("GET")
+	* @Route("/get-team-for-league/{id}", name="test")
+	* @Method("GET")
 	*/
-	/*public function test(Request $request)
+	public function test(Request $request, $id)
 	{
 
 		$em = $this->getEm();
-		$teams = $em->getRepository('App\Entity\LeagueManagement')->findOneBy(['leagueId' => 1]);
+		$league = $em->getRepository('App\Entity\League')->findOneBy(['id' => $id]);
 
-		$tmpArr = array();
-		foreach ($teams as $key => $value) {
-			$tmpArr[] = array(
-				'id' => $value->getId(),
-				'league_name' => $value->getLeague()->getName(),
-				'team_name' => $value->getTeams()->getName(),
-			);
+		// check league exists
+		if(!$league){
+			return new JsonResponse(array('code' => 400, 'message' => 'Requested league not found.'));
 		}
 
-		return new JsonResponse($tmpArr);
-	}*/
+		$leagueData = array();
+		$teamArr = [];
+		foreach ($league->getTeams() as $key => $team) {
+			$teamArr[] = array(
+				'id' => $team->getTeam()->getId(),
+				'name' => $team->getTeam()->getName(),
+				'strip' => $team->getTeam()->getStrip(),
+			);
+		}
+		$leagueData[] = array(
+			'id' => $league->getId(),
+			'league_name' => $league->getName(),
+			'teams' => $teamArr,
+		);
+
+		return new JsonResponse($leagueData);
+	}
+
+
+	/**
+	* @Route("/delete-league/{id}", name="delete_league")
+	* @Method("GET")
+	*/
+	public function deleteLeague(Request $request, $id)
+	{
+
+		$em = $this->getEm();
+		$league = $em->getRepository('App\Entity\League')->find($id);
+
+		// check league exists
+		if(!$league){
+			return new JsonResponse(array('code' => 400, 'message' => 'Requested league not found.'));
+		}
+
+		// remove league
+		$em->remove($league);
+   		$em->flush(); 
+
+   		$responseArr = array('code' => 200, 'message' => 'League deleted successfully !');
+		return new JsonResponse($responseArr);
+	}
 }
